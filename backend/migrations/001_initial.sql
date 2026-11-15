@@ -1,2 +1,4 @@
 -- Initial schema is created through SQLAlchemy Base.metadata.create_all.
 -- Natural keys: users.email, shipments.code, samples.code; unique constraints enforce idempotency.
+-- study_batches(study_id, batch) is the idempotency key for within-route permutation batches:
+-- concurrent workers and retries insert each batch at most once, so progress is never double-counted.

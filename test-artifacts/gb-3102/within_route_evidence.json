@@ -1,0 +1,90 @@
+{
+  "checks": [
+    "simpson",
+    "interrupt",
+    "concurrency",
+    "api",
+    "full_scale",
+    "worker"
+  ],
+  "evidence": {
+    "simpson": {
+      "raw_pearson": -0.700512,
+      "within_pearson": 0.983828,
+      "perm_p": 0.0001999600079984003,
+      "permutations": 5000,
+      "seconds": 0.05,
+      "routes": [
+        {
+          "route": "验证线路 A",
+          "pairs": 10,
+          "missing": 0,
+          "included": true,
+          "reason": null
+        },
+        {
+          "route": "验证线路 B",
+          "pairs": 10,
+          "missing": 0,
+          "included": true,
+          "reason": null
+        },
+        {
+          "route": "验证线路 C",
+          "pairs": 10,
+          "missing": 0,
+          "included": true,
+          "reason": null
+        },
+        {
+          "route": "验证线路 D",
+          "pairs": 1,
+          "missing": 1,
+          "included": false,
+          "reason": "有效配对不足 2 条，无法在线路内扣除均值"
+        },
+        {
+          "route": "验证线路 E",
+          "pairs": 3,
+          "missing": 0,
+          "included": false,
+          "reason": "线路内变量为常量，对线内相关无贡献"
+        }
+      ]
+    },
+    "interrupt": {
+      "batches_at_first_stop": 0,
+      "batches_at_second_stop": 2,
+      "resume_matches_uninterrupted": true
+    },
+    "concurrency": {
+      "workers": 3,
+      "batches": 20,
+      "permutations_counted": 2000,
+      "matches_uninterrupted": true,
+      "retry_double_count": false
+    },
+    "api": {
+      "old_shape_preserved": true,
+      "route_frozen": true,
+      "export_gated_until_done": true,
+      "over_limit_rejected_422": true,
+      "viewer_forbidden_403": true,
+      "progress_visible": true
+    },
+    "full_scale": {
+      "permutations": 100000,
+      "batches": 200,
+      "seconds": 0.86,
+      "within_pearson": 0.983828,
+      "perm_p": 9.99990000099999e-06
+    },
+    "worker": {
+      "recovery_and_claim": true,
+      "pooled_path_unchanged": true,
+      "within_path_done": true,
+      "artifacts": 2
+    }
+  },
+  "tmp": "/tmp/within-route-k7n4w10i"
+}

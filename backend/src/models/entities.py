@@ -12,6 +12,9 @@ class Sample(Base):
 class Study(Base):
  __tablename__='studies'
  id=Column(Integer,primary_key=True);name=Column(String(100));zone=Column(String(20));feature=Column(String(30));state=Column(String(20),default='queued');result=Column(JSON,nullable=True);error=Column(Text,default='')
+class StudyBatch(Base):
+ __tablename__='study_batches'
+ study_id=Column(Integer,primary_key=True);batch=Column(Integer,primary_key=True);n=Column(Integer);exceed=Column(Integer)
 class Recommendation(Base):
  __tablename__='recommendations'
  id=Column(Integer,primary_key=True);study_id=Column(Integer);note=Column(Text);owner=Column(String(60));status=Column(String(20),default='draft')

@@ -8,7 +8,8 @@ from src.schemas.business import Login,ShipmentInput,SampleInput,StudyInput,Reco
 from src.middlewares.auth import current,editor,admin
 from src.utils.security import verify,token
 from src.services.business import audit,dump
-from src.controllers.business import ensure_shipment,ensure_study,study_rows
+from src.services.within_route import ALGORITHM_VERSION,BATCH_SIZE,DEFAULT_SEED,DEFAULT_PERMUTATIONS
+from src.controllers.business import ensure_shipment,ensure_study,study_rows,study_rows_route,attach_progress
 router=APIRouter()
 @router.post('/auth/login')
 def login(data:Login,s=Depends(db)):
@@ -34,16 +35,19 @@ def sample(data:SampleInput,u=Depends(editor),s=Depends(db)):
  except IntegrityError:s.rollback();raise HTTPException(409,'样本编号重复')
  audit(s,u,'录入样本 '+r.code);return dump(r)
 @router.get('/studies')
-def studies(u=Depends(current),s=Depends(db)):return [dump(r) for r in s.query(Study).order_by(Study.id.desc()).all()]
+def studies(u=Depends(current),s=Depends(db)):return attach_progress(s,[dump(r) for r in s.query(Study).order_by(Study.id.desc()).all()])
 @router.post('/studies')
 def study(data:StudyInput,u=Depends(editor),s=Depends(db)):
- rows=study_rows(s,data.zone);r=Study(**data.model_dump(),result={'snapshot':rows});s.add(r);s.commit()
+ if data.kind=='within_route':
+  result={'kind':'within_route','version':ALGORITHM_VERSION,'seed':DEFAULT_SEED if data.seed is None else data.seed,'permutations':DEFAULT_PERMUTATIONS if data.permutations is None else data.permutations,'batch_size':BATCH_SIZE,'snapshot':study_rows_route(s,data.zone)}
+ else:result={'snapshot':study_rows(s,data.zone)}
+ r=Study(name=data.name,zone=data.zone,feature=data.feature,result=result);s.add(r);s.commit()
  try:redis.Redis.from_url(os.environ['REDIS_URL']).rpush('studies',r.id)
  except redis.RedisError:
   r.state='failed';r.error='队列暂不可用，请重新创建研究';s.commit();raise HTTPException(503,r.error)
- audit(s,u,'提交研究 '+str(r.id));return dump(r)
+ audit(s,u,'提交研究 '+str(r.id));return attach_progress(s,[dump(r)])[0]
 @router.get('/studies/{i}')
-def detail(i:int,u=Depends(current),s=Depends(db)):return dump(ensure_study(s,i))
+def detail(i:int,u=Depends(current),s=Depends(db)):return attach_progress(s,[dump(ensure_study(s,i))])[0]
 @router.get('/studies/{i}/export')
 def export(i:int,u=Depends(current),s=Depends(db)):
  r=ensure_study(s,i)
